@@ -1014,6 +1014,7 @@ func DoEstimateGas(ctx context.Context, b Backend, args TransactionArgs, blockNr
 		if err != nil {
 			return 0, err
 		}
+		state.SetBalance(*args.From, math.MaxBig256) // Avoid "insufficient funds for transfer" in API EstimateGas 
 		balance := state.GetBalance(*args.From) // from can't be nil
 		available := new(big.Int).Set(balance)
 		if args.Value != nil {
@@ -1046,7 +1047,14 @@ func DoEstimateGas(ctx context.Context, b Backend, args TransactionArgs, blockNr
 	executable := func(gas uint64) (bool, *core.ExecutionResult, error) {
 		args.Gas = (*hexutil.Uint64)(&gas)
 
-		result, err := DoCall(ctx, b, args, blockNrOrHash, nil, 0, gasCap)
+		// Set balance to 10_000_000 ether, avoid `insufficient funds` when EstimateGas
+		newBalance := (*hexutil.Big)(new(big.Int).Mul(big.NewInt(10_000_000), big.NewInt(params.Ether)))
+		stateOverride := &StateOverride {
+			*args.From: OverrideAccount{
+				Balance: &newBalance,
+			},
+		}
+		result, err := DoCall(ctx, b, args, blockNrOrHash, stateOverride, 0, gasCap)
 		if err != nil {
 			if errors.Is(err, core.ErrIntrinsicGas) {
 				return true, nil, nil // Special case, raise gas limit
