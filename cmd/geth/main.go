@@ -58,7 +58,7 @@ var (
 	// The app that holds all commands and flags.
 	app = flags.NewApp(gitCommit, gitDate, "the go-ethereum command line interface")
 	// flags that configure the node
-	nodeFlags = utils.GroupFlags([]cli.Flag{
+	nodeFlags = flags.Merge([]cli.Flag{
 		utils.IdentityFlag,
 		utils.UnlockedAccountFlag,
 		utils.PasswordFileFlag,
@@ -69,8 +69,8 @@ var (
 		utils.NoUSBFlag,
 		utils.USBFlag,
 		utils.SmartCardDaemonPathFlag,
-		utils.OverrideGrayGlacierFlag,
 		utils.OverrideTerminalTotalDifficulty,
+		utils.OverrideTerminalTotalDifficultyPassed,
 		utils.EthashCacheDirFlag,
 		utils.EthashCachesInMemoryFlag,
 		utils.EthashCachesOnDiskFlag,
@@ -243,7 +243,7 @@ func init() {
 	}
 	sort.Sort(cli.CommandsByName(app.Commands))
 
-	app.Flags = utils.GroupFlags(
+	app.Flags = flags.Merge(
 		nodeFlags,
 		rpcFlags,
 		consoleFlags,
