@@ -58,7 +58,7 @@ type StateTrie struct {
 // and returns MissingNodeError if the root node cannot be found.
 func NewStateTrie(owner common.Hash, root common.Hash, db *Database) (*StateTrie, error) {
 	if db == nil {
-		panic("trie.NewSecure called without a database")
+		panic("trie.NewStateTrie called without a database")
 	}
 	trie, err := New(owner, root, db)
 	if err != nil {
@@ -199,10 +199,10 @@ func (t *StateTrie) GetKey(shaKey []byte) []byte {
 	return t.preimages.preimage(common.BytesToHash(shaKey))
 }
 
-// Commit collects all dirty nodes in the trie and replace them with the
-// corresponding node hash. All collected nodes(including dirty leaves if
+// Commit collects all dirty nodes in the trie and replaces them with the
+// corresponding node hash. All collected nodes (including dirty leaves if
 // collectLeaf is true) will be encapsulated into a nodeset for return.
-// The returned nodeset can be nil if the trie is clean(nothing to commit).
+// The returned nodeset can be nil if the trie is clean (nothing to commit).
 // All cached preimages will be also flushed if preimages recording is enabled.
 // Once the trie is committed, it's not usable anymore. A new trie must
 // be created with new root and updated trie database for following usage
@@ -218,7 +218,7 @@ func (t *StateTrie) Commit(collectLeaf bool) (common.Hash, *NodeSet, error) {
 		}
 		t.secKeyCache = make(map[string][]byte)
 	}
-	// Commit the trie to its intermediate node database
+	// Commit the trie and return its modified nodeset.
 	return t.trie.Commit(collectLeaf)
 }
 
